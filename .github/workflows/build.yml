@@ -53,10 +53,27 @@ jobs:
         cd zephyr-sdk-0.16.5
         ./setup.sh -t arm-zephyr-eabi -h -c
 
+    - name: List available boards
+      run: |
+        cd zephyrproject/zephyr
+        west boards | grep -i "nano\|nrf52840\|promicro" || echo "No matching boards found"
+
     - name: Build HCI USB sample
       run: |
         cd zephyrproject/zephyr
-        west build -b nice_nano_v2 samples/bluetooth/hci_usb
+        # Try different possible board names for nice!nano v2
+        if west boards | grep -q "nice_nano_v2"; then
+          west build -b nice_nano_v2 samples/bluetooth/hci_usb
+        elif west boards | grep -q "promicro_nrf52840"; then
+          west build -b promicro_nrf52840 samples/bluetooth/hci_usb
+        elif west boards | grep -q "nrf52840dongle_nrf52840"; then
+          west build -b nrf52840dongle_nrf52840 samples/bluetooth/hci_usb
+        else
+          echo "ERROR: No compatible board found!"
+          echo "Available nRF52840 boards:"
+          west boards | grep nrf52840 || echo "No nRF52840 boards found"
+          exit 1
+        fi
 
     - name: Upload UF2 firmware
       uses: actions/upload-artifact@v4
