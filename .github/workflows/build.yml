@@ -75,18 +75,43 @@ jobs:
           exit 1
         fi
 
+    - name: List build outputs
+      run: |
+        echo "=== Build directory contents ==="
+        ls -lh zephyrproject/zephyr/build/zephyr/
+        echo ""
+        echo "=== Available firmware files ==="
+        find zephyrproject/zephyr/build/zephyr/ -name "zephyr.*" -type f
+
+    - name: Install uf2conv (for UF2 generation)
+      run: |
+        pip3 install uf2
+
+    - name: Generate UF2 file from HEX
+      run: |
+        cd zephyrproject/zephyr/build/zephyr
+        if [ -f zephyr.hex ]; then
+          uf2conv zephyr.hex -c -f 0xADA52840 -o zephyr.uf2
+          echo "UF2 file generated successfully"
+          ls -lh zephyr.uf2
+        else
+          echo "ERROR: zephyr.hex not found!"
+          exit 1
+        fi
+
     - name: Upload UF2 firmware
       uses: actions/upload-artifact@v4
       with:
-        name: hci_usb_nice_nano_v2
+        name: hci_usb_nice_nano_v2_uf2
         path: zephyrproject/zephyr/build/zephyr/zephyr.uf2
         if-no-files-found: error
 
-    - name: Upload HEX firmware
+    - name: Upload HEX and BIN firmware
       uses: actions/upload-artifact@v4
       with:
-        name: hci_usb_nice_nano_v2_hex
+        name: hci_usb_nice_nano_v2_hex_bin
         path: |
           zephyrproject/zephyr/build/zephyr/zephyr.hex
           zephyrproject/zephyr/build/zephyr/zephyr.bin
+          zephyrproject/zephyr/build/zephyr/zephyr.elf
         if-no-files-found: warn
