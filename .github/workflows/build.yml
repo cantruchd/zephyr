@@ -83,9 +83,10 @@ jobs:
         echo "=== Available firmware files ==="
         find zephyrproject/zephyr/build/zephyr/ -name "zephyr.*" -type f
 
-    - name: Download uf2conv script
+    - name: Download uf2conv script and families file
       run: |
         wget https://raw.githubusercontent.com/microsoft/uf2/master/utils/uf2conv.py
+        wget https://raw.githubusercontent.com/microsoft/uf2/master/utils/uf2families.json
         chmod +x uf2conv.py
 
     - name: Generate UF2 file from HEX
